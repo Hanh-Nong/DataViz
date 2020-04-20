@@ -1,0 +1,100 @@
+---
+title: 'Group/Homework #3'
+author: 'Hanh Nong'
+date: "3/30/2020"
+output: html_document
+---
+
+## Preface/Preamble
+
+You should always have an initial r code chunk that sets up your work environment by loading all the packages you would need for the rest of the document. Fill in the code chunk below.
+
+```{r}
+library(gapminder)
+library(here)
+library(socviz)
+library(tidyverse)
+```
+
+## Chapter 4 "Where to Go Next"
+
+**Put `r` code into code chunks and write narrative answers as plain text.**
+
+1. Revisit the `gapminder` plots at the beginning of the chapter and experiment with different ways to facet the data. Try plotting population and per capita GDP while faceting on year, or even on country. In the latter case you will get a lot of panels, and plotting them straight to the screen may take a long time. Instead, assign the plot to an object and save it as a PDF file to your `figures/` folder. Experiment with the height and width of the figure.
+
+1a. Group by year:
+
+```{r}
+fig_1 <- ggplot(data = gapminder, mapping = aes(x = pop, y = gdpPercap)) +
+  labs(x = "Population", y = "GDP Per Capita", 
+       title = "Population and Economic growth",
+       caption = "Source: Gapminder")
+fig_1a <- fig_1 + scale_x_log10(label = scales::comma) + geom_line() +
+  labs(subtitle = "Group by year")+ 
+  facet_wrap(~year)
+fig_1a
+```
+
+1a. Group by country:
+
+```{r}
+
+fig_1b <- fig_1 + scale_x_log10(label = scales::comma) + geom_line() +
+  labs(subtitle = "Group by country") + facet_wrap(~country)
+```
+
+```{r}
+ggsave(here("figures","HW3_fig_1b.pdf"), plot = fig_1b, height = 18, width = 40, units = "in")
+```
+
+2. Investigate the difference between a formula written as `facet_grid(sex ~ race)` versus one written as `facet_grid(~ sex + race)`.
+```{r}
+fig_2 <- ggplot(data = gss_sm, mapping = aes(x = age, y = childs)) +
+  geom_point(alpha = 0.2) + geom_smooth()
+fig_2 + facet_grid(sex~race)
+fig_2 + facet_grid(~sex + race)
+```
+
+'sex~race' gives us two-way comparison between sex an race, while '~sex + race' only gives us 1-way panel. 'sex~race' produces the layout of 2x3 dimension (2 sexes and 3 races) while '~sex + race' returns the panel as 1x6 dimension (6 combinations of sex and race). The latter one breaks out the data by the combination of sex and race rather than by sex and race separately as in 'sex~race'
+
+3. Experiment to see what happens when you use `facet_wrap()` with more complex forumulas like `facet_wrap(~ sex + race)` instead of `facet_grid`.
+
+```{r}
+fig_2 + facet_wrap(~ sex + race)
+```
+
+'facet_wrap(~ sex + race)' return the same layout as using 'facet_grid(sex ~ race), there's minor difference in labeling of the panel. 'facet_grid' makes it's easier to read the panel as sex and race labels are positioned on the sides of the panel.
+
+4. Frequency polygons are closely related to histograms. Instead of displaying the count of observations using bars, they display it with a series of connected lines instead. You can try the various `geom_histogram()` calls in this chapter using `geom_freqpoly()` instead.
+
+```{r}
+fig_4 <- ggplot(data = midwest, mapping = aes(x = area))
+fig_4 + geom_freqpoly()
+```
+
+```{r}
+oh_wi <- c("OH","WI")
+fig_4 <- ggplot(data = subset(midwest, subset = state %in% oh_wi), 
+                mapping = aes(x = percollege, colour = state))
+fig_4 + geom_freqpoly()
+```
+
+5. A histogram bins observations for one variable and shows a bars with the count in each bin. We can do this for two variables at once, too. The `geom_bin2d()` function takes two mappings, `x` and `y`. It divides your plot into a grid and colors the bins by the count of observations in them. Try using it on the `gapminder` data to plot life expectancy versus per capita GDP. Like a histogram, you can vary the number or width of the bins for both x or y. Instead of saying `bins = 30` or `binwidth = 1`, provide a number for both `x` and `y` with, for example, `bins = c(20, 50)`. If you specify `bindwith` instead, you will need to pick values that are on the same scale as the variable you are mapping.
+
+```{r}
+fig_5 <- ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp))+
+  labs(y = "Life Expectancy", x = "GDP Per Capita", 
+       title = "Life Expectancy and Economic growth",
+       caption = "Source: Gapminder", subtitle = "Count of observations")
+fig_5 + geom_bin2d()
+fig_5 + geom_bin2d(bins = c(10, 40), binwidth = c(2500,5))
+```
+
+6. Density estimates can also be drawn in two dimensions. The `geom_density_2d()` function draws contour lines estimating the joint distribution of two variables. Try it with the `midwest` data, for example, plotting percent below the poverty line (`percbelowpoverty`) against percent college-educated (`percollege`). Try it with and without a `geom_point()` layer.
+
+```{r}
+fig_6 <- ggplot(data = midwest, mapping = aes(x = percollege, y = percbelowpoverty))
+fig_6 + geom_point() + geom_density_2d()
+fig_6 + geom_density_2d()
+```
+

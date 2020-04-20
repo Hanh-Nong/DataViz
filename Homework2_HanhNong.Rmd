@@ -1,0 +1,98 @@
+---
+title: 'Group/Homework #2'
+author: 'Hanh Nong'
+date: "3/23/2020"
+output: html_document
+---
+
+## Preface/Preamble
+
+You should always have an initial r code chunk that sets up your work environment by loading all the packages you would need for the rest of the document. Fill in the code chunk below.
+
+```{r}
+library(gapminder)
+library(here)
+library(socviz)
+library(tidyverse)
+```
+
+## Chapter 3 "Where to Go Next"
+
+**Put `r` code into code chunks and write narrative answers as plain text.**
+
+1. What happens when you put the `geom_smooth()` function before `geom_point()` instead of after it? What does this tell you about how the plot is drawn? Think about how this might be useful when drawing plots.
+```{r}
+fig <- ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp))
+fig + geom_smooth() + geom_point()
+```
+
+```{r}
+fig <- ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp))
+fig + geom_point() + geom_smooth()
+```
+
+If geom_smooth is put before geom_point, ggplot will add the fitted line first before adding the scatter plot layer. That way, we can't see the fitted line where there's high density of points in the graph. It's useful to visualize the graph first in mind and decide which layer should go first. The way ggplot works represents how we manually draw a graph.
+
+2. Change the mappings in the `aes()` function so that you plot Life Expectancy against population (pop) rather than per capita GDP. What does that look like? What does it tell you about the unit of observation in the dataset?
+
+```{r}
+fig <- ggplot(data = gapminder, mapping = aes(x = pop, y = lifeExp))
+fig + geom_point() + geom_smooth()
+```
+
+Population variable consists of much larger values than gdpPercap and lifeExp. Hence it's difficult to see the trend in group with low value of population. 
+
+3. Try some alternative scale mappings. Besides `scale_x_log10()` you can try `scale_x_sqrt()` and `scale_x_reverse()`. There are corresponding functions for y-axis transformations. Just write `y` instead of `x`. Experiment with them to see what sort of effect they have on the plot, and whether they make any sense to use.
+
+Using `scale_x_log10()` could be the best way for this graph since it scale the pop' value without changing its trend. From below graph, it shows a rather stable trend among the increment of population. The trend increases gradually as population increases.
+
+```{r}
+fig <- ggplot(data = gapminder, mapping = aes(x = pop, y = lifeExp))
+fig + geom_point() + geom_smooth() + scale_x_log10()
+fig + geom_point() + geom_smooth() + scale_y_log10()
+```
+
+Using `scale_x_sqrt()`: this method takes the square root of population values. This can reduce the magnitude of population values but it does not scale as good as log. Hence, the trend is less clear as using log.
+
+```{r}
+fig + geom_point() + geom_smooth() + scale_x_sqrt()
+fig + geom_point() + geom_smooth() + scale_y_sqrt()
+```
+
+Using `scale_x_reverse()`: This only shows the graph in reverse order, and is not helpful for our purpose.
+
+```{r}
+fig + geom_point() + geom_smooth() + scale_x_reverse()
+fig + geom_point() + geom_smooth() + scale_y_reverse()
+```
+
+
+4. What happens if you map `color` to `year` instead of `continent`? Is the result what you expected? Think about what class of object `year` is. Remember you can get a quick look at the top of the data, which includes some shorthand information on the class of each variable, by typing `gapminder`.
+
+year has more values than continent. Also, continent is already categorical variable, while year can still be treated as numerical variable. Hence, eventhough ggplot shows the color of points according to their year, it doesn't show the smooth line for each year.
+
+```{r}
+fig <- ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp, color = year))
+fig + geom_point() + geom_smooth(method = "lm") + scale_x_log10()
+```
+
+5. Instead of mapping `color = year`, what happens if you try `color = factor(year)`?
+
+By using factor(year), ggplot now takes in year as category and it adds smooth line for each year category. The color is also distinctive between year categories rather than color scale as in q.4's graph.
+
+```{r}
+fig <- ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp, color = factor(year)))
+fig + geom_point() + geom_smooth(method = "lm", se= FALSE) + scale_x_log10(labels = scales::dollar)
+```
+
+6. As you look at these different scatterplots, think about Figure 3.13 a little more critically. We worked it up to the point where it was reasonably polished, but is it really the best way to display this country-year data? What are we gaining and losing by ignoring the temporal and country-level structure of the data? How could we do better? Sketch out (in words) what an alternative visualization might look like.
+
+Figure 3.13 has only 1 fitted line for all the years. From graph in q.5, eventhough all years share the same poitive correlation between gdp and life expectancy, the level of correlation is different between years. 
+
+Figure in q.5 also shows as time goes by, there are more data points clustered in higher life expectancy as the fitted line for recent years (1997-2007) are all above the earlier years. This tells us the life expectancy for each level of gdpPercap increases through the years. Figure 3.13 can't tell this information. 
+
+7. Save the plot from #5 above using both the `here()` function and the `ggsave()` function.
+```{r}
+ggsave(here("figures","homewore_02_q5.png"))
+```
+
